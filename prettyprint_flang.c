@@ -344,6 +344,37 @@ static const char *prettystr_omp_target_mode(int mode) {
   return "";
 }
 
+static void prettyprint_uplevel_sptr(int uplevel_sptr) {
+  LLUplevel *uplevel = llmp_get_uplevel(uplevel_sptr);
+
+  printf("uplevel: %s symbols: ", prettystr_sym(uplevel_sptr));
+
+  for (int i = 0; i < uplevel->vals_count; ++i) {
+#ifdef PRETTYPRINT_FLANG1
+    if (uplevel->vals[i] && STYPEG(uplevel->vals[i]) == ST_ARRDSC)
+#else
+    if (!uplevel->vals[i])
+#endif
+      continue;
+    printf("%s%s ", get_termstr(termstr_green),
+        prettystr_symtype(uplevel->vals[i]));
+    printf("%s%s, ", get_termstr(termstr_clear),
+        prettystr_sym(uplevel->vals[i]));
+  }
+
+  printf("\n");
+}
+
+static void prettyprint_scope_sptr(int scope_sptr) {
+  printf("scope: %s ", prettystr_sym(scope_sptr));
+  int uplevel_sptr = PARUPLEVELG(scope_sptr);
+
+  if (PARSYMSG(uplevel_sptr)) {
+    prettyprint_uplevel_sptr(uplevel_sptr);
+  }
+  printf("\n");
+}
+
 #ifdef PRETTYPRINT_FLANG1
 void prettyprint_ast(int ast);
 void prettyprint_ast_with_attr(int ast, struct prettyprint_attr *attr);
@@ -415,25 +446,7 @@ static char *prettystr_op(int optype) {
 
 static void prettyprint_stblk(int ast) {
   int scope_sptr = A_SPTRG(ast);
-  int uplevel_sptr = PARUPLEVELG(scope_sptr);
-
-  printf("stblk: scope: %s uplevel: %s symbols: ", prettystr_sym(scope_sptr),
-      prettystr_sym(uplevel_sptr));
-
-  if (PARSYMSG(uplevel_sptr)) {
-    LLUplevel *uplevel = llmp_get_uplevel(uplevel_sptr);
-
-    for (int i = 0; i < uplevel->vals_count; ++i) {
-      if (uplevel->vals[i] && STYPEG(uplevel->vals[i]) == ST_ARRDSC)
-        continue;
-      printf("%s%s ", get_termstr(termstr_green),
-          prettystr_symtype(uplevel->vals[i]));
-      printf("%s%s, ", get_termstr(termstr_clear),
-          prettystr_sym(uplevel->vals[i]));
-    }
-  }
-
-  printf("\n");
+  prettyprint_scope_sptr(scope_sptr);
 }
 
 static void prettyprint_asn(int ast, struct prettyprint_attr *attr) {
