@@ -347,7 +347,10 @@ static const char *prettystr_omp_target_mode(int mode) {
 static void prettyprint_uplevel_sptr(int uplevel_sptr) {
   LLUplevel *uplevel = llmp_get_uplevel(uplevel_sptr);
 
-  printf("uplevel: %s symbols: ", prettystr_sym(uplevel_sptr));
+  printf("uplevel: %s ", prettystr_sym(uplevel_sptr));
+  if (uplevel->parent)
+    printf("parent: %s ", prettystr_sym(uplevel->parent));
+  printf("symbols: ");
 
   for (int i = 0; i < uplevel->vals_count; ++i) {
 #ifdef PRETTYPRINT_FLANG1
