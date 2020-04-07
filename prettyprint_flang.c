@@ -344,21 +344,20 @@ static const char *prettystr_omp_target_mode(int mode) {
   return "";
 }
 
-static void prettyprint_uplevel_sptr(int uplevel_sptr) {
-  LLUplevel *uplevel = llmp_get_uplevel(uplevel_sptr);
-
-  printf("uplevel: %s ", prettystr_sym(uplevel_sptr));
-  if (uplevel->parent)
-    printf("parent: %s ", prettystr_sym(uplevel->parent));
-  printf("symbols: ");
+static void prettyprint_uplevel(const LLUplevel *uplevel) {
+  /* TODO: how to get uplevel's sptr ? */
+  printf("LLUplevel: %p symbols: ", uplevel);
 
   for (int i = 0; i < uplevel->vals_count; ++i) {
-#ifdef PRETTYPRINT_FLANG1
-    if (uplevel->vals[i] && STYPEG(uplevel->vals[i]) == ST_ARRDSC)
-#else
     if (!uplevel->vals[i])
-#endif
       continue;
+
+#ifdef PRETTYPRINT_FLANG1
+    if (STYPEG(uplevel->vals[i]) == ST_ARRDSC)
+#else
+    if (DESCARRAYG(uplevel->vals[i]))
+#endif
+        continue;
     printf("%s%s ", get_termstr(termstr_green),
         prettystr_symtype(uplevel->vals[i]));
     printf("%s%s, ", get_termstr(termstr_clear),
@@ -366,6 +365,16 @@ static void prettyprint_uplevel_sptr(int uplevel_sptr) {
   }
 
   printf("\n");
+}
+
+static void prettyprint_uplevel_sptr(int uplevel_sptr) {
+  LLUplevel *uplevel = llmp_get_uplevel(uplevel_sptr);
+
+  printf("uplevel: %s ", prettystr_sym(uplevel_sptr));
+  if (uplevel->parent)
+    printf("parent: %s ", prettystr_sym(uplevel->parent));
+
+  prettyprint_uplevel(uplevel);
 }
 
 static void prettyprint_scope_sptr(int scope_sptr) {
