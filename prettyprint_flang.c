@@ -698,6 +698,19 @@ static void prettyprint_mp_bmpscope(int ast, struct prettyprint_attr *attr) {
     printf("\n");
 }
 
+static void prettyprint_where(int ast, struct prettyprint_attr *attr) {
+  printf("%s, ", astb.atypes[A_TYPEG(ast)]);
+  if (A_IFSTMTG(ast)) {
+    printf("asn: ");
+    prettyprint_ast_with_attr(A_IFSTMTG(ast), &default_arg_attr);
+  }
+  printf("mask: ");
+  prettyprint_ast_with_attr(A_IFEXPRG(ast), &default_arg_attr);
+
+  if (attr->newline)
+    printf("\n");
+}
+
 void prettyprint_ast_with_attr(int ast, struct prettyprint_attr *attr) {
   char cmdline[4096] = {0};
 
@@ -765,6 +778,10 @@ void prettyprint_ast_with_attr(int ast, struct prettyprint_attr *attr) {
     prettyprint_entry(ast, attr);
     break;
 
+  case A_ENDWHERE: case A_ELSEWHERE:
+    printf("%s\n", astb.atypes[A_TYPEG(ast)]);
+    break;
+
   case A_FORALL:
     prettyprint_forall(ast, attr);
     break;
@@ -811,6 +828,10 @@ void prettyprint_ast_with_attr(int ast, struct prettyprint_attr *attr) {
   case A_UNOP:
     if (attr->expand_obj)
       prettyprint_unop(ast, attr);
+    break;
+
+  case A_WHERE:
+    prettyprint_where(ast, attr);
     break;
 
   case A_MP_MAP:
