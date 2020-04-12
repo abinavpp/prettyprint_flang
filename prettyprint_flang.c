@@ -367,6 +367,16 @@ static void prettyprint_uplevel(const LLUplevel *uplevel) {
   printf("\n");
 }
 
+static void prettyprint_uplevel_chain(const LLUplevel *uplevel) {
+  while (uplevel) {
+    prettyprint_uplevel(uplevel);
+    if (!uplevel->parent)
+      break;
+    printf("child of :\n  ");
+    uplevel = llmp_has_uplevel(uplevel->parent);
+  }
+}
+
 static void prettyprint_uplevel_sptr(int uplevel_sptr) {
   LLUplevel *uplevel = llmp_get_uplevel(uplevel_sptr);
 
