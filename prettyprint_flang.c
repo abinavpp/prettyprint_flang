@@ -788,7 +788,7 @@ void prettyprint_ast_with_attr(int ast, struct prettyprint_attr *attr) {
     prettyprint_entry(ast, attr);
     break;
 
-  case A_ENDWHERE: case A_ELSEWHERE:
+  case A_ENDWHERE: case A_ELSEWHERE: case A_ELSE:
     printf("%s\n", astb.atypes[A_TYPEG(ast)]);
     break;
 
