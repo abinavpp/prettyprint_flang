@@ -7,6 +7,7 @@
  * - add this file in flang1exe/
  * - Write #define PRETTYPRINT_FLANG1 *followed* by #including this file (shush...
  *   I know #including .c file is bad) wherever you want in flang1/
+ * - Set FLANG_BUILD_PATH (see below)
  * - call prettyprint_ast(any_ast_you_want)
  * - Enjoy!
  *
@@ -14,15 +15,14 @@
  *
  * WARNING: CMake will fail if it got re-invoked (unless you track this file in
  * flang's CMake), duh.
+ *
+ * There are still more macros to be handled, we currently use the build path to
+ * grep for the unhandled macro. FLANG_BUILD_PATH macro must be set correctly
+ * for this.
  */
 
 #ifndef PRETTYPRINT_FLANG
 #define PRETTYPRINT_FLANG
-
-/* There are still more macros to be handled, we currently use the build path to
- * grep for the unhandled macro.
- */
-#define FLANG_BUILD_PATH "/home/abinav/llvm_dev/build/flang-compiler/flang"
 
 enum termstr {
   termstr_clear,
