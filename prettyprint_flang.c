@@ -61,6 +61,12 @@ struct prettyprint_attr {
   bool is_ili_opn;
 };
 
+static struct prettyprint_attr default_arg_attr = {
+  .newline = false,
+  .lineno = false,
+  .expand_obj = true
+};
+
 // Copied from mwd.cpp's dumpdtype()
 static char *prettystr_ty(int ty)
 {
@@ -344,7 +350,8 @@ static const char *prettystr_omp_target_mode(int mode) {
   return "";
 }
 
-static void prettyprint_uplevel(const LLUplevel *uplevel) {
+static void prettyprint_uplevel(const LLUplevel *uplevel,
+    struct prettyprint_attr *attr) {
   /* TODO: how to get uplevel's sptr ? */
   printf("LLUplevel: %p symbols: ", uplevel);
 
@@ -364,48 +371,54 @@ static void prettyprint_uplevel(const LLUplevel *uplevel) {
         prettystr_sym(uplevel->vals[i]));
   }
 
-  printf("\n");
+  if (attr->newline)
+    printf("\n");
 }
 
-static void prettyprint_uplevel_chain(const LLUplevel *uplevel) {
+static void prettyprint_uplevel_chain(const LLUplevel *uplevel,
+    struct prettyprint_attr *attr) {
   while (uplevel) {
-    prettyprint_uplevel(uplevel);
+    prettyprint_uplevel(uplevel, &default_arg_attr);
     if (!uplevel->parent)
       break;
     printf("child of :\n  ");
     uplevel = llmp_has_uplevel(uplevel->parent);
   }
+
+  if (attr->newline)
+    printf("\n");
 }
 
-static void prettyprint_uplevel_sptr(int uplevel_sptr) {
+static void prettyprint_uplevel_sptr(int uplevel_sptr,
+    struct prettyprint_attr *attr) {
   LLUplevel *uplevel = llmp_get_uplevel(uplevel_sptr);
 
   printf("uplevel: %s ", prettystr_sym(uplevel_sptr));
   if (uplevel->parent)
     printf("parent: %s ", prettystr_sym(uplevel->parent));
 
-  prettyprint_uplevel(uplevel);
+  prettyprint_uplevel(uplevel, &default_arg_attr);
+
+  if (attr->newline)
+    printf("\n");
 }
 
-static void prettyprint_scope_sptr(int scope_sptr) {
+static void prettyprint_scope_sptr(int scope_sptr,
+    struct prettyprint_attr *attr) {
   printf("scope: %s ", prettystr_sym(scope_sptr));
   int uplevel_sptr = PARUPLEVELG(scope_sptr);
 
   if (PARSYMSG(uplevel_sptr)) {
-    prettyprint_uplevel_sptr(uplevel_sptr);
+    prettyprint_uplevel_sptr(uplevel_sptr, &default_arg_attr);
   }
-  printf("\n");
+
+  if (attr->newline)
+    printf("\n");
 }
 
 #ifdef PRETTYPRINT_FLANG1
 void prettyprint_ast(int ast);
 void prettyprint_ast_with_attr(int ast, struct prettyprint_attr *attr);
-
-static struct prettyprint_attr default_arg_attr = {
-  .newline = false,
-  .lineno = false,
-  .expand_obj = true
-};
 
 static char *prettystr_object(int ast) {
   return prettystr_sym(A_SPTRG(ast));
@@ -468,7 +481,7 @@ static char *prettystr_op(int optype) {
 
 static void prettyprint_stblk(int ast) {
   int scope_sptr = A_SPTRG(ast);
-  prettyprint_scope_sptr(scope_sptr);
+  prettyprint_scope_sptr(scope_sptr, &default_arg_attr);
 }
 
 static void prettyprint_asn(int ast, struct prettyprint_attr *attr) {
