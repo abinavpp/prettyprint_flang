@@ -55,8 +55,8 @@ const char *get_termstr(enum termstr ts) {
 
 struct prettyprint_attr {
   bool newline;
-  bool expand_obj;
   bool lineno;
+  bool expand_obj;
 
   bool is_ili_opn;
 };
@@ -627,9 +627,43 @@ static void prettyprint_forall(int ast, struct prettyprint_attr *attr) {
     printf("\n");
 }
 
+static char *prettystr_di_sch(int di_sch) {
+  switch (di_sch) {
+  case DI_SCH_STATIC:
+    return "static";
+  case DI_SCH_DYNAMIC:
+    return "dynamic";
+  case DI_SCH_GUIDED:
+    return "guided";
+  case DI_SCH_INTERLEAVE:
+    return "interleave";
+  case DI_SCH_RUNTIME:
+    return "runtime";
+  case DI_SCH_AUTO:
+    return "auto";
+  case DI_SCH_DIST_STATIC:
+    return "dist-static";
+  case DI_SCH_DIST_DYNAMIC:
+    return "dist-dynamic";
+  }
+  return "unk";
+}
+
 static void prettyprint_do(int ast, struct prettyprint_attr *attr) {
   if (A_TYPEG(ast) == A_MP_PDO) {
     printf("mp_pdo: ");
+
+    printf(", loop_type: ");
+    if (A_DISTRIBUTEG(ast))
+      printf("distr");
+    else if (A_DISTPARDOG(ast))
+      printf("distr-par-do");
+    else if (A_TASKLOOPG(ast))
+      printf("task");
+    else
+      printf("unk");
+
+    printf(", sched: %s", prettystr_di_sch(A_SCHED_TYPEG(ast)));
     printf(", dovar: ");
     prettyprint_ast_with_attr(A_DOVARG(ast), &default_arg_attr);
     printf(", lastval: ");
